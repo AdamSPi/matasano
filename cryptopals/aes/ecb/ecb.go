@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"crypto/aes"
 	"crypto/cipher"
+	"matasano/cryptopals/util"
 )
 
 func Encrypt(plaintext, password string) ([]byte, error) {
@@ -11,8 +12,13 @@ func Encrypt(plaintext, password string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
+	blockSize := blockCipher.BlockSize()
+	paddedText, err := util.Pad([]byte(plaintext), blockSize)
+	if err != nil {
+		return nil, err
+	}
 	encrypter := newEncrypter(blockCipher)
-	return encrypter.crypt([]byte(plaintext)).Bytes(), nil
+	return encrypter.crypt(paddedText).Bytes(), nil
 }
 
 func Decrypt(ciphertext []byte, password string) (string, error) {
@@ -22,6 +28,24 @@ func Decrypt(ciphertext []byte, password string) (string, error) {
 	}
 	decrypter := newDecrypter(blockCipher)
 	return decrypter.crypt(ciphertext).String(), nil
+}
+
+func EncryptBytes(plaintext []byte, password string) ([]byte, error) {
+	blockCipher, err := aes.NewCipher([]byte(password))
+	if err != nil {
+		return nil, err
+	}
+	encrypter := newEncrypter(blockCipher)
+	return encrypter.crypt(plaintext).Bytes(), nil
+}
+
+func DecryptBytes(ciphertext []byte, password string) ([]byte, error) {
+	blockCipher, err := aes.NewCipher([]byte(password))
+	if err != nil {
+		return nil, err
+	}
+	decrypter := newDecrypter(blockCipher)
+	return decrypter.crypt(ciphertext).Bytes(), nil
 }
 
 func newEncrypter(cipher cipher.Block) codebook {

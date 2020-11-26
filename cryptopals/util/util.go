@@ -10,11 +10,11 @@ import (
 )
 
 func ReadFile(path string) []byte {
-	bytes, err := ioutil.ReadFile(path)
+	data, err := ioutil.ReadFile(path)
 	if err != nil {
 		log.Fatal("could not read file")
 	}
-	return bytes
+	return data
 }
 
 func ScanFile(path string) []byte {
@@ -23,13 +23,13 @@ func ScanFile(path string) []byte {
 		log.Fatal(err)
 	}
 	scan := bufio.NewScanner(file)
-	bytes := make([]byte, 0, 1024)
+	data := make([]byte, 0, 1024)
 
 	for scan.Scan() {
 		input := []byte(scan.Text())
-		bytes = append(bytes, input...)
+		data = append(data, input...)
 	}
-	return bytes
+	return data
 }
 
 func Chunkify(text []byte, size int) [][]byte {
@@ -61,8 +61,11 @@ func Blockify(text []byte, size int) [][]byte {
 }
 
 func Pad(text []byte, size int) ([]byte, error) {
+	if len(text)%size == 0 {
+		return text, nil
+	}
 	if size <= 1 || size > 255 {
-		return nil, errors.New("incompatible block size")
+		return text, errors.New("invalid block size")
 	}
 	n := size - len(text)%size
 	padding := []byte{byte(n)}
@@ -71,7 +74,7 @@ func Pad(text []byte, size int) ([]byte, error) {
 
 func Unpad(text []byte, size int) ([]byte, error) {
 	if len(text)%size != 0 {
-		return nil, errors.New("incorrect padding")
+		return text, errors.New("invalid padding")
 	}
 	n := int(text[len(text)-1])
 	padding := bytes.Repeat([]byte{byte(n)}, n)

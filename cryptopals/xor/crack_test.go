@@ -11,7 +11,7 @@ import (
 
 func TestHammingDistance(t *testing.T) {
 	t.Run(
-		"hamming distance example test",
+		"hamming distance test",
 		func(t *testing.T) {
 			if d := distance([]byte("this is a test"), []byte("wokka wokka!!!")); d != 37 {
 				t.Errorf("expected distance mismatch: expected 37, got %d", d)
